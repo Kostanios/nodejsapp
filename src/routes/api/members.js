@@ -1,5 +1,6 @@
+const { json } = require('express');
 const express = require('express');
-
+const uuid = require('uuid')
 const db = require('../../localDB/members.json')
 
 const router = express.Router();
@@ -21,4 +22,41 @@ router.get('/:id', (req, res)=> {
     
 })
 
+// Create member
+router.post('/', (req, res) => {
+  const reqBody = req.body
+  const newMember = {
+    id: uuid.v4(),
+    name: reqBody.name,
+    email: reqBody.email,
+    old: reqBody.old,
+    status: 'active',
+  }
+  if( !newMember.name || !newMember.email) {
+    res.status(400).json({msg: 'pls include email and name'})
+  } else {
+    db.push(newMember)
+    res.send({db: db, status: 'new member was created!'})
+  }
+  
+})
+
+// Update Member
+router.put('/:id', (req, res) => {
+  const searchId = req.params.id
+  const found = db.some(member => member.id == searchId)
+  if(found){
+    const reqBody = req.body
+    db.forEach(member => {
+      if (member.id == searchId) {
+        member.name = reqBody.name ? reqBody.name : member.name
+        member.old = reqBody.old ? reqBody.old : member.old
+        member.email = reqBody.email ? reqBody.email : member.email
+        res.json({msg: 'Member updated', member});
+      }
+    })
+  } else {
+    res.status(400).json({msg: `members with id : ${searchId} not found`})
+  }
+})
 module.exports = router
