@@ -59,4 +59,19 @@ router.put('/:id', (req, res) => {
     res.status(400).json({msg: `members with id : ${searchId} not found`})
   }
 })
+
+router.delete('/:id', (req, res)=>{
+  const searchId = req.params.id
+  const found = db.some(member => member.id == searchId)
+  if(found){
+    db.forEach((member, index) => {
+      if (member.id == searchId) {
+        db.splice(index, 1)
+        res.json({msg: `Member with id: ${searchId} was deleted`, member});
+      }
+    })
+  } else {
+    res.status(400).json({msg: `members with id : ${searchId} not found`})
+  }
+})
 module.exports = router
